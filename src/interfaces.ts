@@ -1,20 +1,39 @@
-export type ChallongerLocalStorage = {
-  tourney: TourneyPath;
-  config: Config;
-  INIT?: boolean;
+// REPLACED BY V2
+// export type ChallongerLocalStorage = {
+//   tourney: TourneyPath;
+//   config: Config;
+//   INIT?: boolean;
+// };
+// export interface Config {
+//   challongeKey: string | null;
+// }
+// export interface TourneyPath {
+//   domain: string;
+//   tourneyName: string;
+// }
+// export interface Match {
+//   match: MatchInfo;
+// }
+
+export type AppState = {
+  currentView: 'HOME' | 'PLAYER' | 'MATCH';
+  playerIdView: string | null;
+  matchIdView: string | null;
+  selectedTournaments: string[];
+  apiKey: string;
+  subdomain: string;
+  initializedFromStorage?: boolean;
 };
 
-export interface Config {
-  challongeKey: string | null;
-}
+export type ChallongerLocalStorageV2 = Pick<
+  AppState,
+  'selectedTournaments' | 'apiKey' | 'subdomain' | 'initializedFromStorage'
+>;
 
-export interface TourneyPath {
-  domain: string;
-  tourneyName: string;
-}
-
-export interface Match {
-  match: MatchInfo;
+export type GetPlayersQueryParams = {
+  apiKey: string;
+  subdomain: string;
+  tournamentId: string;
 }
 
 export interface MatchInfo {
@@ -160,8 +179,8 @@ export interface TournamentInfo {
 }
 
 export type AppReducerActions =
-  | 'INIT_SETTINGS'
-  | 'SELECT_TOURNAMENT'
-  | 'CHANGE_TOURNEY_NAME'
-  | 'CHANGE_DOMAIN'
-  | 'CHANGE_API_KEY';
+  | 'INIT_STATE_FROM_STORAGE'
+  | 'CHANGE_SUBDOMAIN'
+  | 'CHANGE_API_KEY'
+  | 'REMOVE_TOURNAMENT'
+  | 'ADD_TOURNAMENT';

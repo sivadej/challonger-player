@@ -1,40 +1,25 @@
 import { useQuery, UseQueryResult } from 'react-query';
 import { API_BASE_URL } from '@config/api';
 import axios from 'axios';
-import { Participant, PlayerMap, ChallongerLocalStorage, ParticipantInfo } from 'interfaces';
+import { Participant, GetPlayersQueryParams } from 'interfaces';
 
-const transformToPlayerMap = (data: Participant[]): PlayerMap => {
-  const playerMap: PlayerMap = new Map<number, ParticipantInfo>();
-  if (!data) return playerMap;
-  for (const p of data) {
-    const { participant: pInfo } = p;
-    playerMap.set(pInfo.id, pInfo);
-  }
-  return playerMap;
-};
-
-const getPlayers = async (settings: ChallongerLocalStorage) => {
-  const {
-    config: { challongeKey },
-    tourney: { domain, tourneyName },
-  } = settings;
+const getPlayers = async ({
+  apiKey,
+  subdomain,
+  tournamentId,
+}: GetPlayersQueryParams) => {
   const url = `${API_BASE_URL}/players`;
   const params = {
-    subdomain: domain,
-    name: tourneyName,
-    api_key: challongeKey,
+    api_key: apiKey,
+    subdomain,
+    tournament_id: tournamentId,
   };
-  if (!domain || !tourneyName || !challongeKey) return transformToPlayerMap([]);
   const { data } = await axios.get<Participant[] | null>(url, { params });
-  return transformToPlayerMap(data ?? []);
+  return data ?? [];
 };
 
 export default function usePlayersQuery(
-  settings: ChallongerLocalStorage
-): UseQueryResult<PlayerMap> {
-  const { tourney } = settings || {};
-  const { domain, tourneyName } = tourney || {};
-  return useQuery([`${domain}-${tourneyName}`, 'players'], () =>
-    getPlayers(settings)
-  );
+  args: GetPlayersQueryParams
+): UseQueryResult<Participant[]> {
+  return useQuery([args.tournamentId, 'players'], () => getPlayers(args));
 }

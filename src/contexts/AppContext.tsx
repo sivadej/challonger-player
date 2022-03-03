@@ -1,19 +1,18 @@
 import React, { createContext, useEffect, useReducer } from 'react';
-import { AppReducerActions, ChallongerLocalStorage } from 'interfaces';
+import { AppReducerActions, ChallongerLocalStorageV2, AppState } from 'interfaces';
 
-const initialState: ChallongerLocalStorage = {
-  tourney: {
-    domain: '',
-    tourneyName: '',
-  },
-  config: {
-    challongeKey: '',
-  },
-  INIT: false,
+const initialState: AppState = {
+  apiKey: '',
+  selectedTournaments: [],
+  subdomain: '',
+  initializedFromStorage: false,
+  currentView: 'HOME',
+  playerIdView: null,
+  matchIdView: null,
 }
 
 const AppContext = createContext<{
-  state: ChallongerLocalStorage;
+  state: AppState;
   dispatch: React.Dispatch<any>;
 }>({
   state: initialState,
@@ -21,42 +20,41 @@ const AppContext = createContext<{
 });
 
 const reducer = (
-  state: ChallongerLocalStorage,
+  state: AppState,
   action: { type: AppReducerActions; payload?: any },
-): ChallongerLocalStorage => {
-  const newState: ChallongerLocalStorage = { ...state };
+): AppState => {
+  const newState: AppState = { ...state };
   switch(action.type) {
 
-    case 'INIT_SETTINGS':
-      console.log('INIT_SETTINGS');
-      newState.INIT = true;
-      newState.config = action.payload.config;
-      newState.tourney = action.payload.tourney;
+    case 'INIT_STATE_FROM_STORAGE':
+      console.log('INIT_STATE_FROM_STORAGE');
+      newState.initializedFromStorage = true;
+      newState.apiKey = action.payload.apiKey;
+      newState.subdomain = action.payload.subdomain;
       setLocalStorage(newState);
       return newState;
-    
-    case 'SELECT_TOURNAMENT':
-      console.log('SELECT_TOURNAMENT');
-      newState.tourney.domain = action.payload.domain;
-      newState.tourney.tourneyName = action.payload.tourneyName;
+
+    case 'REMOVE_TOURNAMENT':
+      console.log('REMOVE_TOURNAMENT');
+      newState.selectedTournaments = state.selectedTournaments.filter(t => t !== action.payload.tournamentId)
       setLocalStorage(newState);
       return newState;
-    
-    case 'CHANGE_TOURNEY_NAME':
-      console.log('CHANGE_TOURNEY_NAME');
-      newState.tourney = { ...state.tourney, tourneyName: action.payload.tourneyName };
+
+    case 'ADD_TOURNAMENT':
+      console.log('ADD_TOURNAMENT');
+      newState.selectedTournaments.push(action.payload.tournamentId);
       setLocalStorage(newState);
       return newState;
-    
-    case 'CHANGE_DOMAIN':
-      console.log('CHANGE_DOMAIN');
-      newState.tourney = { ...state.tourney, domain: action.payload.domain };
+
+    case 'CHANGE_SUBDOMAIN':
+      console.log('CHANGE_SUBDOMAIN');
+      newState.subdomain = action.payload.subdomain;
       setLocalStorage(newState);
       return newState;
     
     case 'CHANGE_API_KEY':
       console.log('CHANGE_API_KEY');
-      newState.config.challongeKey = action.payload.challongeKey;
+      newState.apiKey = action.payload.apiKey;
       setLocalStorage(newState);
       return newState;
     
@@ -65,7 +63,7 @@ const reducer = (
   }
 }
 
-function setLocalStorage(state: ChallongerLocalStorage) {
+function setLocalStorage(state: ChallongerLocalStorageV2) {
   window.localStorage.setItem(
     'challongerPlayerSettings',
     JSON.stringify(state),
@@ -75,14 +73,14 @@ function setLocalStorage(state: ChallongerLocalStorage) {
 const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   useEffect(() => {
-    function initLocalStorage(state: ChallongerLocalStorage) {
+    function initLocalStorage(state: ChallongerLocalStorageV2) {
       const savedState = window.localStorage.getItem('challongerPlayerSettings');
       dispatch({
-        type: 'INIT_SETTINGS',
+        type: 'INIT_STATE_FROM_STORAGE',
         payload: savedState ? JSON.parse(savedState) : state,
       })
     }
-    if (!state.INIT) initLocalStorage(state);
+    if (!state.initializedFromStorage) initLocalStorage(state);
   }, [state]);
   return (
     <AppContext.Provider value={{ state, dispatch }}>
