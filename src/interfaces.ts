@@ -1,20 +1,3 @@
-// REPLACED BY V2
-// export type ChallongerLocalStorage = {
-//   tourney: TourneyPath;
-//   config: Config;
-//   INIT?: boolean;
-// };
-// export interface Config {
-//   challongeKey: string | null;
-// }
-// export interface TourneyPath {
-//   domain: string;
-//   tourneyName: string;
-// }
-// export interface Match {
-//   match: MatchInfo;
-// }
-
 export type AppState = {
   currentView: 'HOME' | 'PLAYER' | 'MATCH';
   playerIdView: string | null;
@@ -34,7 +17,13 @@ export type GetPlayersQueryParams = {
   apiKey: string;
   subdomain: string;
   tournamentId: string;
-}
+};
+
+export type GetPlayersSetQueryParams = {
+  apiKey: string;
+  subdomain: string;
+  tournamentIds: string[];
+};
 
 export interface MatchInfo {
   attachment_count?: string | null;
@@ -64,6 +53,10 @@ export interface MatchInfo {
   winner_id?: number | null;
   prerequisite_match_ids_csv: string;
   scores_csv: string;
+}
+
+export interface PlayersSet {
+  [k: string]: string[];
 }
 
 export interface Participant {
@@ -179,8 +172,17 @@ export interface TournamentInfo {
 }
 
 export type AppReducerActions =
-  | 'INIT_STATE_FROM_STORAGE'
-  | 'CHANGE_SUBDOMAIN'
-  | 'CHANGE_API_KEY'
-  | 'REMOVE_TOURNAMENT'
-  | 'ADD_TOURNAMENT';
+  | {
+      type: 'INIT_STATE_FROM_STORAGE';
+      payload: {
+        initializedFromStorage: boolean;
+        apiKey: string;
+        subdomain: string;
+      };
+    }
+  | { type: 'CHANGE_SUBDOMAIN'; payload: { subdomain: string } }
+  | { type: 'CHANGE_API_KEY'; payload: { apiKey: string } }
+  | { type: 'REMOVE_TOURNAMENT'; payload: { tournamentId: string } }
+  | { type: 'ADD_TOURNAMENT'; payload: { tournamentId: string } }
+  | { type: 'SHOW_PLAYER_VIEW'; payload: { playerName: string } }
+  | { type: 'CHANGE_VIEW'; payload: { view: AppState['currentView'] } };

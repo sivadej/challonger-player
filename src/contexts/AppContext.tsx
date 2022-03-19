@@ -4,7 +4,7 @@ import { AppReducerActions, ChallongerLocalStorageV2, AppState } from 'interface
 const initialState: AppState = {
   apiKey: '',
   selectedTournaments: [],
-  subdomain: '',
+  subdomain: 'akg',
   initializedFromStorage: false,
   currentView: 'HOME',
   playerIdView: null,
@@ -13,7 +13,7 @@ const initialState: AppState = {
 
 const AppContext = createContext<{
   state: AppState;
-  dispatch: React.Dispatch<any>;
+  dispatch: React.Dispatch<AppReducerActions>;
 }>({
   state: initialState,
   dispatch: () => null,
@@ -21,7 +21,7 @@ const AppContext = createContext<{
 
 const reducer = (
   state: AppState,
-  action: { type: AppReducerActions; payload?: any },
+  action: AppReducerActions,
 ): AppState => {
   const newState: AppState = { ...state };
   switch(action.type) {
@@ -57,6 +57,17 @@ const reducer = (
       newState.apiKey = action.payload.apiKey;
       setLocalStorage(newState);
       return newState;
+
+    case 'CHANGE_VIEW':
+      newState.currentView = action.payload.view;
+      return newState;
+
+    case 'SHOW_PLAYER_VIEW':
+      newState.currentView = 'PLAYER';
+      newState.playerIdView = action.payload.playerName;
+      return newState;
+    
+    // TODO auto reset timeout
     
     default:
       return state;
