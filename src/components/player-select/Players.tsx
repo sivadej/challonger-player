@@ -44,6 +44,8 @@ export default function Players(): JSX.Element {
 
   return (
     <>
+      {JSON.stringify(state, null, 2)}
+
       <div className='d-flex justify-content-center mt-3'>
         <div
           className='bg-dark border border-light p-3'
@@ -52,8 +54,7 @@ export default function Players(): JSX.Element {
           <Row>
             {names.map((p) => {
               return (
-                <>
-                  <Col xs={6} sm={4}>
+                  <Col xs={6} sm={4} key={p}>
                     <div
                       className='bg-black border border-secondary text-center p-2 m-2'
                       role='button'
@@ -69,13 +70,12 @@ export default function Players(): JSX.Element {
                           justifyContent: 'center',
                         }}
                       >
-                        {entities[p].map((id) => (
-                          <Badge>{getTournamentShortName(id)}</Badge>
+                        {entities[p]?.map((pl) => (
+                          <Badge key={pl.tournamentId}>{getTournamentShortName(pl.tournamentId)}</Badge>
                         ))}
                       </div>
                     </div>
                   </Col>
-                </>
               );
             })}
           </Row>

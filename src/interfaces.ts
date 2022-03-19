@@ -19,10 +19,26 @@ export type GetPlayersQueryParams = {
   tournamentId: string;
 };
 
+export type GetMatchesQueryParams = {
+  apiKey: string;
+  subdomain: string;
+  tournamentId: string;
+};
+
+export type GetTournamentQueryParams = {
+  apiKey: string;
+  subdomain: string;
+  tournamentId: string;
+};
+
 export type GetPlayersSetQueryParams = {
   apiKey: string;
   subdomain: string;
   tournamentIds: string[];
+};
+
+export interface Match {
+  match: MatchInfo;
 };
 
 export interface MatchInfo {
@@ -56,7 +72,10 @@ export interface MatchInfo {
 }
 
 export interface PlayersSet {
-  [k: string]: string[];
+  [k: string]: {
+    tournamentId: string;
+    playerId: string;
+  }[];
 }
 
 export interface Participant {
@@ -169,6 +188,7 @@ export interface TournamentInfo {
   participants_swappable: boolean;
   team_convertable: boolean;
   group_stages_were_started: boolean;
+  matches?: Match[];
 }
 
 export type AppReducerActions =
