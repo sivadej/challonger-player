@@ -3,7 +3,7 @@ import { API_BASE_URL } from '@config/api';
 import axios from 'axios';
 import { PlayersSet, GetPlayersSetQueryParams } from 'interfaces';
 
-type PlayersSetRes = { entities: PlayersSet, names: string[] };
+type PlayersSetRes = { entities: PlayersSet; names: string[] };
 
 const getPlayersSet = async ({
   apiKey,
@@ -16,7 +16,7 @@ const getPlayersSet = async ({
     subdomain,
     tournament_ids: tournamentIds.join(','),
   });
-  const { data } = await axios.get<PlayersSetRes | null>(url, { params });
+  const { data } = await axios.get<PlayersSetRes>(url, { params });
   return data;
 };
 

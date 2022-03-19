@@ -14,12 +14,12 @@ const getTournament = async ({
     subdomain,
     tournament_id: tournamentId,
   };
-  const { data } = await axios.get<Tournament[] | null>(url, { params });
+  const { data } = await axios.get<Tournament | null>(url, { params });
   return data ?? [];
 };
 
 export default function useTournamentQuery(
   args: GetTournamentQueryParams
-): UseQueryResult<Tournament[]> {
+): UseQueryResult<Tournament> {
   return useQuery([args.tournamentId, 'tournament'], () => getTournament(args));
 }

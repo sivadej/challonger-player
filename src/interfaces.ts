@@ -31,6 +31,12 @@ export type GetTournamentQueryParams = {
   tournamentId: string;
 };
 
+export type GetTournamentsQueryParams = {
+  apiKey: string;
+  subdomain: string;
+  tournamentIds: string[];
+};
+
 export type GetPlayersSetQueryParams = {
   apiKey: string;
   subdomain: string;
