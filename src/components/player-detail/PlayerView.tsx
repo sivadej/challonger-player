@@ -1,11 +1,14 @@
 import React, { useContext, useMemo } from 'react';
-import { Badge, Row, Col, Placeholder, Button } from 'react-bootstrap';
+import { Button, Dropdown, DropdownButton, Spinner } from 'react-bootstrap';
+import { useIsFetching } from 'react-query';
 import { AppContext } from '@contexts/AppContext';
 import usePlayersSetQuery from '@hooks/query/usePlayersSetQuery';
 import useTournamentsQuery from '@hooks/query/useTournamentsQuery';
+import useReportMatchMutation from '@hooks/mutation/useReportMatchMutation';
 
 interface DetailLine {
   tournamentName: string;
+  tournamentId: string | number;
   gameName: string;
   matches: MatchDetail[];
 }
@@ -25,7 +28,7 @@ export default function PlayerView(): JSX.Element {
   const { apiKey, subdomain, selectedTournaments, playerIdView } = state;
 
   // using players set cached query, get entities[playerIdView] to retrieve tournament ids
-  const { data, isFetching: playersSetFetching } = usePlayersSetQuery({
+  const { data } = usePlayersSetQuery({
     apiKey,
     subdomain,
     tournamentIds: selectedTournaments,
@@ -35,18 +38,13 @@ export default function PlayerView(): JSX.Element {
     () => (entities && playerIdView ? entities[playerIdView] : []),
     [entities, playerIdView]
   );
-  console.log('lookup table', playerDict);
-
-  // using selected playerEntity...
-  console.log('selected playerEntity:', JSON.stringify(playerEntity, null, 2));
 
   // given this entity's pId/tId, query each tournament w players and matches by tId.
-  const tRes: any = useTournamentsQuery({
+  const tRes: any[] = useTournamentsQuery({
     apiKey,
     subdomain,
     tournamentIds: playerEntity.map((p) => p.tournamentId),
   });
-  // console.log('tournamentsQuery', tRes);
 
   // iterate over each playerEntity
   // find matches involving pId (pId is match.player1_id or match.player2_id)
@@ -59,6 +57,7 @@ export default function PlayerView(): JSX.Element {
       if (!tRes[i].data) return;
       const detailLine: DetailLine = {
         tournamentName: tRes[i].data.tournament.name,
+        tournamentId: tRes[i].data.tournament.id,
         gameName: tRes[i].data.tournament.game_name,
         matches: [],
       };
@@ -67,10 +66,9 @@ export default function PlayerView(): JSX.Element {
           `${node.match?.player1_id}` === tp.playerId ||
           `${node.match?.player2_id}` === tp.playerId
       );
-      console.log('filtered matches', tpMatches);
       detailLine.matches = tpMatches.map(
         (tpm: any): MatchDetail => ({
-          tId: tpm.id,
+          tId: tpm.tournament_id,
           mId: tpm.match.id,
           round: tpm.match.round,
           isWinner: tpm.match.winner_id
@@ -94,23 +92,37 @@ export default function PlayerView(): JSX.Element {
     return tpLines;
   }, [playerEntity, tRes, playerDict]);
 
-  const handleClickReportMatch = async (matchId: number | string) => {
+  const { mutate: reportMatch, isLoading: reportMatchLoading } =
+    useReportMatchMutation();
+  const handleClickReportMatch = async (
+    matchId: number | string,
+    tournamentId: string | number,
+    winnerId: number | string,
+    scoreCsv?: string
+  ) => {
     if (!matchId) return;
     console.log('report matchid', matchId);
-    // TODO: implement mutation for match report
-    // report match api: PUT /match
-    // params:
-    // api_key,
-    // match_id,
-    // scores_csv,
-    // subdomain,
-    // tournament_id,
-    // winner_id,
+    const args = {
+      apiKey,
+      subdomain,
+      matchId,
+      tournamentId,
+      winnerId,
+      scoreCsv,
+    };
+    console.log(args);
+    const res = await reportMatch(args);
+    console.log(res);
   };
+
+  const globalIsFetching = useIsFetching();
 
   return (
     <>
-      <div className='d-flex justify-content-center my-3'>
+      <div
+        className='d-flex justify-content-center mb-3 bg-dark'
+        style={{ position: 'sticky', top: 0 }}
+      >
         <div
           className='d-flex w-100 m-3 align-items-center'
           style={{ justifyContent: 'space-between' }}
@@ -126,7 +138,12 @@ export default function PlayerView(): JSX.Element {
             VIEWING PLAYER:
             <span style={{ fontWeight: 700 }}> {playerIdView}</span>
           </div>
-          <div style={{ flex: 0 }}>
+          <div
+            style={{ flex: 0, display: 'inline-flex', alignItems: 'center' }}
+          >
+            {globalIsFetching > 0 || reportMatchLoading ? (
+              <Spinner animation='grow' variant='primary' className='mx-4' />
+            ) : null}
             <Button
               variant='outline-light'
               size='lg'
@@ -183,7 +200,11 @@ export default function PlayerView(): JSX.Element {
                       <span className='text-muted small px-2'>vs</span>
                       <span style={{ fontSize: '1.2em' }} className='mx-2'>
                         {match.p1.isOpponent
-                          ? match.p1.name ?? <em>upcoming</em>
+                          ? match.p1.name ?? (
+                              <span className='small fst-italic text-muted'>
+                                [ tbd ]
+                              </span>
+                            )
                           : null}
                         {match.p2.isOpponent
                           ? match.p2.name ?? (
@@ -196,7 +217,12 @@ export default function PlayerView(): JSX.Element {
                     </div>
                     {match.isWinner === null ? (
                       <fieldset
-                        disabled={match.p2.id === null || match.p1.id === null}
+                        disabled={
+                          match.p2.id === null ||
+                          match.p1.id === null ||
+                          reportMatchLoading ||
+                          Boolean(globalIsFetching)
+                        }
                       >
                         <div
                           style={{
@@ -209,12 +235,201 @@ export default function PlayerView(): JSX.Element {
                           <div style={{ fontSize: '1rem', fontWeight: 500 }}>
                             REPORT
                           </div>
-                          <Button variant='primary' style={{ width: '5rem' }}>
-                            WIN
-                          </Button>
-                          <Button variant='danger' style={{ width: '5rem' }}>
-                            LOSS
-                          </Button>
+                          <DropdownButton
+                            title='WIN'
+                            size='lg'
+                            menuVariant='dark'
+                          >
+                            <Dropdown.Item
+                              className='fs-2'
+                              onClick={() =>
+                                handleClickReportMatch(
+                                  match.mId,
+                                  tourney.tournamentId,
+                                  match.p1.isOpponent
+                                    ? match.p2.id
+                                    : match.p1.id,
+                                  match.p1.isOpponent ? '0-2' : '2-0'
+                                )
+                              }
+                            >
+                              2-0
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              className='fs-2'
+                              onClick={() =>
+                                handleClickReportMatch(
+                                  match.mId,
+                                  tourney.tournamentId,
+                                  match.p1.isOpponent
+                                    ? match.p2.id
+                                    : match.p1.id,
+                                  match.p1.isOpponent ? '1-2' : '2-1'
+                                )
+                              }
+                            >
+                              2-1
+                            </Dropdown.Item>
+                            <Dropdown.Divider />
+                            <Dropdown.Item
+                              className='fs-3'
+                              onClick={() =>
+                                handleClickReportMatch(
+                                  match.mId,
+                                  tourney.tournamentId,
+                                  match.p1.isOpponent
+                                    ? match.p2.id
+                                    : match.p1.id,
+                                  match.p1.isOpponent ? '0-3' : '3-0'
+                                )
+                              }
+                            >
+                              3-0
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              className='fs-3'
+                              onClick={() =>
+                                handleClickReportMatch(
+                                  match.mId,
+                                  tourney.tournamentId,
+                                  match.p1.isOpponent
+                                    ? match.p2.id
+                                    : match.p1.id,
+                                  match.p1.isOpponent ? '1-3' : '3-1'
+                                )
+                              }
+                            >
+                              3-1
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              className='fs-3'
+                              onClick={() =>
+                                handleClickReportMatch(
+                                  match.mId,
+                                  tourney.tournamentId,
+                                  match.p1.isOpponent
+                                    ? match.p2.id
+                                    : match.p1.id,
+                                  match.p1.isOpponent ? '2-3' : '3-2'
+                                )
+                              }
+                            >
+                              3-2
+                            </Dropdown.Item>
+                            <Dropdown.Divider />
+                            <Dropdown.Item
+                              onClick={() =>
+                                handleClickReportMatch(
+                                  match.mId,
+                                  tourney.tournamentId,
+                                  match.p1.isOpponent
+                                    ? match.p2.id
+                                    : match.p1.id,
+                                  '0-0'
+                                )
+                              }
+                            >
+                              NO SCORE
+                            </Dropdown.Item>
+                          </DropdownButton>
+                          <DropdownButton
+                            title='LOSS'
+                            size='lg'
+                            menuVariant='dark'
+                            variant='danger'
+                          >
+                            <Dropdown.Item
+                              className='fs-2'
+                              onClick={() =>
+                                handleClickReportMatch(
+                                  match.mId,
+                                  tourney.tournamentId,
+                                  !match.p1.isOpponent
+                                    ? match.p2.id
+                                    : match.p1.id,
+                                  !match.p1.isOpponent ? '0-2' : '2-0'
+                                )
+                              }
+                            >
+                              0-2
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              className='fs-2'
+                              onClick={() =>
+                                handleClickReportMatch(
+                                  match.mId,
+                                  tourney.tournamentId,
+                                  !match.p1.isOpponent
+                                    ? match.p2.id
+                                    : match.p1.id,
+                                  !match.p1.isOpponent ? '1-2' : '2-1'
+                                )
+                              }
+                            >
+                              1-2
+                            </Dropdown.Item>
+                            <Dropdown.Divider />
+                            <Dropdown.Item
+                              className='fs-3'
+                              onClick={() =>
+                                handleClickReportMatch(
+                                  match.mId,
+                                  tourney.tournamentId,
+                                  !match.p1.isOpponent
+                                    ? match.p2.id
+                                    : match.p1.id,
+                                  !match.p1.isOpponent ? '0-3' : '3-0'
+                                )
+                              }
+                            >
+                              0-3
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              className='fs-3'
+                              onClick={() =>
+                                handleClickReportMatch(
+                                  match.mId,
+                                  tourney.tournamentId,
+                                  !match.p1.isOpponent
+                                    ? match.p2.id
+                                    : match.p1.id,
+                                  !match.p1.isOpponent ? '1-3' : '3-1'
+                                )
+                              }
+                            >
+                              1-3
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              className='fs-3'
+                              onClick={() =>
+                                handleClickReportMatch(
+                                  match.mId,
+                                  tourney.tournamentId,
+                                  !match.p1.isOpponent
+                                    ? match.p2.id
+                                    : match.p1.id,
+                                  !match.p1.isOpponent ? '2-3' : '3-2'
+                                )
+                              }
+                            >
+                              2-3
+                            </Dropdown.Item>
+                            <Dropdown.Divider />
+                            <Dropdown.Item
+                              onClick={() =>
+                                handleClickReportMatch(
+                                  match.mId,
+                                  tourney.tournamentId,
+                                  !match.p1.isOpponent
+                                    ? match.p2.id
+                                    : match.p1.id,
+                                  '0-0'
+                                )
+                              }
+                            >
+                              NO SCORE
+                            </Dropdown.Item>
+                          </DropdownButton>
                         </div>
                       </fieldset>
                     ) : (

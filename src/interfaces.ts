@@ -49,6 +49,15 @@ export type GetRecentTournamentsQueryParams = {
   createdAfterDate: string;
 };
 
+export type ReportMatchMutationParams = {
+  apiKey: string;
+  matchId: string | number;
+  scoreCsv?: string;
+  subdomain: string;
+  tournamentId: string | number;
+  winnerId: string | number;
+};
+
 export interface Match {
   match: MatchInfo;
 };

@@ -1,25 +1,31 @@
-import { useQuery, UseQueryResult } from 'react-query';
+import client from '@client';
+import { useMutation } from 'react-query';
 import { API_BASE_URL } from '@config/api';
 import axios from 'axios';
-import { Tournament, GetTournamentQueryParams } from 'interfaces';
+import { ReportMatchMutationParams } from 'interfaces';
 
-const getTournament = async ({
+const reportMatch = async ({
   apiKey,
   subdomain,
+  matchId,
   tournamentId,
-}: GetTournamentQueryParams) => {
-  const url = `${API_BASE_URL}/tournament`;
-  const params = {
+  winnerId,
+  scoreCsv = '',
+}: ReportMatchMutationParams) => {
+  const url = `${API_BASE_URL}/match`;
+  const body = {
     api_key: apiKey,
+    match_id: matchId,
+    scores_csv: scoreCsv,
     subdomain,
     tournament_id: tournamentId,
+    winner_id: winnerId,
   };
-  const { data } = await axios.get<Tournament | null>(url, { params });
-  return data ?? [];
+  const res = await axios.put(url, body);
+  client.invalidateQueries([`${tournamentId}`, 'tournament']);
+  return res;
 };
 
-export default function useTournamentQuery(
-  args: GetTournamentQueryParams
-): UseQueryResult<Tournament> {
-  return useQuery([args.tournamentId, 'tournament'], () => getTournament(args));
+export default function useReportMatchMutation() {
+  return useMutation(reportMatch);
 }
