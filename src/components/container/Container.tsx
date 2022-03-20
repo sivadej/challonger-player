@@ -10,7 +10,6 @@ export default function Container(): JSX.Element {
 
   return (
     <>
-      {currentView}
       {currentView === 'HOME' ? <Players /> : null}
       {currentView === 'PLAYER' ? <PlayerView /> : null}
       {currentView === 'MATCH' ? null : null}

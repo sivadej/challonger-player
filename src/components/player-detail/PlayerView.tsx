@@ -1,8 +1,8 @@
-import React, { useContext, useMemo } from "react";
-import { Badge, Row, Col, Placeholder } from "react-bootstrap";
-import { AppContext } from "@contexts/AppContext";
-import usePlayersSetQuery from "@hooks/query/usePlayersSetQuery";
-import useTournamentsQuery from "@hooks/query/useTournamentsQuery";
+import React, { useContext, useMemo } from 'react';
+import { Badge, Row, Col, Placeholder, Button } from 'react-bootstrap';
+import { AppContext } from '@contexts/AppContext';
+import usePlayersSetQuery from '@hooks/query/usePlayersSetQuery';
+import useTournamentsQuery from '@hooks/query/useTournamentsQuery';
 
 interface DetailLine {
   tournamentName: string;
@@ -35,10 +35,10 @@ export default function PlayerView(): JSX.Element {
     () => (entities && playerIdView ? entities[playerIdView] : []),
     [entities, playerIdView]
   );
-  console.log("lookup table", playerDict);
+  console.log('lookup table', playerDict);
 
   // using selected playerEntity...
-  console.log("selected playerEntity:", JSON.stringify(playerEntity, null, 2));
+  console.log('selected playerEntity:', JSON.stringify(playerEntity, null, 2));
 
   // given this entity's pId/tId, query each tournament w players and matches by tId.
   const tRes: any = useTournamentsQuery({
@@ -67,7 +67,7 @@ export default function PlayerView(): JSX.Element {
           `${node.match?.player1_id}` === tp.playerId ||
           `${node.match?.player2_id}` === tp.playerId
       );
-      console.log("filtered matches", tpMatches);
+      console.log('filtered matches', tpMatches);
       detailLine.matches = tpMatches.map(
         (tpm: any): MatchDetail => ({
           tId: tpm.id,
@@ -106,51 +106,132 @@ export default function PlayerView(): JSX.Element {
     // subdomain,
     // tournament_id,
     // winner_id,
-  }
+  };
 
   return (
     <>
-      <div>
-        VIEWING PLAYER: {playerIdView}
-        <hr />
-        <button
-          onClick={() =>
-            dispatch({ type: "CHANGE_VIEW", payload: { view: "HOME" } })
-          }
+      <div className='d-flex justify-content-center my-3'>
+        <div
+          className='d-flex w-100 m-3 align-items-center'
+          style={{ justifyContent: 'space-between' }}
         >
-          back
-        </button>
-      </div>
-      <div className="d-flex justify-content-center mt-3">
-        <div style={{ width: "75%", fontSize: "1.2rem", fontWeight: "bold" }}>
-          VIEWING PLAYER: {playerIdView}
+          <div
+            style={{
+              flex: 1,
+              fontSize: '2rem',
+              fontWeight: 'normal',
+              textTransform: 'uppercase',
+            }}
+          >
+            VIEWING PLAYER:
+            <span style={{ fontWeight: 700 }}> {playerIdView}</span>
+          </div>
+          <div style={{ flex: 0 }}>
+            <Button
+              variant='outline-light'
+              size='lg'
+              className='px-4'
+              onClick={() =>
+                dispatch({ type: 'CHANGE_VIEW', payload: { view: 'HOME' } })
+              }
+            >
+              BACK
+            </Button>
+          </div>
         </div>
       </div>
-      <div className="d-flex justify-content-center mt-0">
-        <div
-          className="bg-dark border border-light p-3"
-          style={{ width: "75%" }}
-        >
+      <div className='d-flex justify-content-center mt-0'>
+        <div style={{ width: '85%', maxWidth: 1000 }}>
           {playerDetailViewData.map((tourney) => (
-            <Row className="m-2" key={tourney.tournamentName}>
-              <strong>{tourney.tournamentName}</strong>
-              {tourney.matches?.map((match) => (
-                <div className="border border-info m-2" key={match.mId} style={getBgStyle(match.isWinner)}>
-                  <div>round {match.round}</div>
-                  {match.isWinner !== null ? (
-                    <div>{match.isWinner ? "win" : "loss"}</div>
-                  ) : (
-                    "not reported"
-                  )}
-                  <div>p1 {match.p1.name}</div>
-                  <div>p2 {match.p2.name}</div>
-                  <div>score {match.score}</div>
-                  <button disabled={match.isWinner !== null} onClick={() => handleClickReportMatch(match.mId)}>
-                    report {match.mId}
-                  </button>
-                </div>
-              ))}
-            </Row>
+            <div key={tourney.tournamentName}>
+              <div
+                className='text-uppercase'
+                style={{
+                  fontSize: '2.5rem',
+                  fontWeight: 800,
+                  color: '#808080',
+                  marginBottom: 2,
+                  marginTop: 30,
+                  lineHeight: '1.8rem',
+                }}
+              >
+                {tourney.gameName}
+              </div>
+              <div style={{ fontSize: '2rem', textTransform: 'uppercase' }}>
+                {tourney.matches?.map((match) => (
+                  <div
+                    className='border border-light p-2 d-flex align-items-center'
+                    key={match.mId}
+                    style={getBgStyle(match.isWinner)}
+                  >
+                    <div
+                      style={{
+                        width: '8%',
+                        textAlign: 'center',
+                        color: '#baddff',
+                        fontSize: '1.2rem',
+                      }}
+                    >
+                      {getRoundLbl(match.round)}
+                    </div>
+                    <div
+                      style={{
+                        flexGrow: 1,
+                        paddingLeft: 8,
+                      }}
+                    >
+                      <span className='text-muted small px-2'>vs</span>
+                      <span style={{ fontSize: '1.2em' }} className='mx-2'>
+                        {match.p1.isOpponent
+                          ? match.p1.name ?? <em>upcoming</em>
+                          : null}
+                        {match.p2.isOpponent
+                          ? match.p2.name ?? (
+                              <span className='small fst-italic text-muted'>
+                                [ tbd ]
+                              </span>
+                            )
+                          : null}
+                      </span>
+                    </div>
+                    {match.isWinner === null ? (
+                      <fieldset
+                        disabled={match.p2.id === null || match.p1.id === null}
+                      >
+                        <div
+                          style={{
+                            textAlign: 'right',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                          }}
+                        >
+                          <div style={{ fontSize: '1rem', fontWeight: 500 }}>
+                            REPORT
+                          </div>
+                          <Button variant='primary' style={{ width: '5rem' }}>
+                            WIN
+                          </Button>
+                          <Button variant='danger' style={{ width: '5rem' }}>
+                            LOSS
+                          </Button>
+                        </div>
+                      </fieldset>
+                    ) : (
+                      <div
+                        style={{
+                          fontSize: '1.5rem',
+                          fontWeight: 200,
+                          marginRight: 10,
+                        }}
+                      >
+                        {match.isWinner ? 'W' : 'L'} {match.score}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
         {/* <pre>{JSON.stringify(playerDetailViewData, null, 2)}</pre> */}
@@ -160,8 +241,16 @@ export default function PlayerView(): JSX.Element {
 }
 
 const getBgStyle = (win: boolean | null): { backgroundColor?: string } => {
-  const style: { backgroundColor?: string } = {};
-  if (win === true) style.backgroundColor = 'navy';
-  if (win === false) style.backgroundColor = '#660000';
+  const style: { backgroundColor?: string } = { backgroundColor: '#000' };
+  if (win === true) style.backgroundColor = '#00084d';
+  if (win === false) style.backgroundColor = '#540600';
   return style;
-}
+};
+
+const getRoundLbl = (r: number | null): string => {
+  if (!r) return '--';
+  if (r === 1) return 'R1';
+  if (r < 0) return `L${Math.abs(r)}`;
+  if (r > 1) return `W${r}`;
+  return '';
+};

@@ -1,8 +1,8 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import client from '@client';
 import { QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
-import { AppProvider, AppContext } from '@contexts/AppContext';
+import { AppProvider } from '@contexts/AppContext';
 import { PlayerSetProvider } from '@contexts/PlayerSetContext';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
