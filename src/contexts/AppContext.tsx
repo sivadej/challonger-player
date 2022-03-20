@@ -3,7 +3,8 @@ import { AppReducerActions, ChallongerLocalStorageV2, AppState } from 'interface
 
 const initialState: AppState = {
   apiKey: '',
-  selectedTournaments: [],
+  selectedTournaments: ['10838641','10838636','10838634','10838653'],
+  //selectedTournaments: ['10875522', '10875520'],
   subdomain: 'akg',
   initializedFromStorage: false,
   currentView: 'HOME',

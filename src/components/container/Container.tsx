@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { AppContext } from '@contexts/AppContext';
-import Players from '@components/player-select';
-import PlayerView from '@components/player-view';
+import Players from '@components/player-list';
+import PlayerView from '@components/player-detail';
 
 export default function Container(): JSX.Element {
   const {

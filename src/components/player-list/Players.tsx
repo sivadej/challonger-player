@@ -44,12 +44,11 @@ export default function Players(): JSX.Element {
 
   return (
     <>
-      {JSON.stringify(state, null, 2)}
-
+      {/* {JSON.stringify(state, null, 2)} */}
       <div className='d-flex justify-content-center mt-3'>
         <div
           className='bg-dark border border-light p-3'
-          style={{ width: '75%' }}
+          style={{ width: '85%' }}
         >
           <Row>
             {names.map((p) => {
