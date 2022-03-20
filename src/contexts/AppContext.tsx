@@ -2,10 +2,10 @@ import React, { createContext, useEffect, useReducer } from 'react';
 import { AppReducerActions, ChallongerLocalStorageV2, AppState } from 'interfaces';
 
 const initialState: AppState = {
-  apiKey: '',
+  apiKey: 'PLACEHOLDER',
   selectedTournaments: ['10838641','10838636','10838634','10838653'],
   //selectedTournaments: ['10875522', '10875520'],
-  subdomain: 'akg',
+  subdomain: 'PLACEHOLDER',
   initializedFromStorage: false,
   currentView: 'HOME',
   playerIdView: null,
