@@ -43,6 +43,12 @@ export type GetPlayersSetQueryParams = {
   tournamentIds: string[];
 };
 
+export type GetRecentTournamentsQueryParams = {
+  apiKey: string;
+  subdomain: string;
+  createdAfterDate: string;
+};
+
 export interface Match {
   match: MatchInfo;
 };
@@ -204,6 +210,7 @@ export type AppReducerActions =
         initializedFromStorage: boolean;
         apiKey: string;
         subdomain: string;
+        selectedTournaments: string[];
       };
     }
   | { type: 'CHANGE_SUBDOMAIN'; payload: { subdomain: string } }
@@ -211,4 +218,5 @@ export type AppReducerActions =
   | { type: 'REMOVE_TOURNAMENT'; payload: { tournamentId: string } }
   | { type: 'ADD_TOURNAMENT'; payload: { tournamentId: string } }
   | { type: 'SHOW_PLAYER_VIEW'; payload: { playerName: string } }
-  | { type: 'CHANGE_VIEW'; payload: { view: AppState['currentView'] } };
+  | { type: 'CHANGE_VIEW'; payload: { view: AppState['currentView'] } }
+  | { type: 'SET_TOURNAMENTS_LIST'; payload: { tournamentIds: string[] } };

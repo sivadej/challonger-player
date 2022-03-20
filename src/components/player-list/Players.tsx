@@ -58,8 +58,12 @@ export default function Players(): JSX.Element {
 
   return (
     <>
-      <div style={{ margin: '1rem 4rem', fontWeight: 400, fontSize: '4rem' }}>REPORT MATCH</div>
-      <div style={{ margin: '0 4rem', fontWeight: 400, fontSize: '1.5rem' }}>SELECT YOUR NAME</div>
+      <div style={{ margin: '1rem 4rem', fontWeight: 400, fontSize: '4rem' }}>
+        REPORT MATCH
+      </div>
+      <div style={{ margin: '0 4rem', fontWeight: 400, fontSize: '1.5rem' }}>
+        SELECT YOUR NAME
+      </div>
       <div className='d-flex justify-content-center mt-3'>
         <div
           className='bg-dark border border-light p-3'
@@ -84,11 +88,12 @@ export default function Players(): JSX.Element {
                         justifyContent: 'center',
                       }}
                     >
-                      {entities[p]?.map((pl) => (
+                      {/* {entities[p]?.map((pl) => (
                         <Badge key={pl.tournamentId}>
                           {getTournamentShortName(pl.tournamentId)}
                         </Badge>
-                      ))}
+                      ))} */}
+                      {/* <Badge>{entities[p]?.length}</Badge> */}
                     </div>
                   </div>
                 </Col>

@@ -1,7 +1,7 @@
-import { useQuery, UseQueryResult } from "react-query";
-import { API_BASE_URL } from "@config/api";
-import axios from "axios";
-import { PlayersSet, GetPlayersSetQueryParams } from "interfaces";
+import { useQuery, UseQueryResult } from 'react-query';
+import { API_BASE_URL } from '@config/api';
+import axios from 'axios';
+import { PlayersSet, GetPlayersSetQueryParams } from 'interfaces';
 
 type PlayersSetRes = {
   entities: PlayersSet;
@@ -18,7 +18,7 @@ const getPlayersSet = async ({
   const params = new URLSearchParams({
     api_key: apiKey,
     subdomain,
-    tournament_ids: tournamentIds.join(","),
+    tournament_ids: tournamentIds.join(','),
   });
   const { data } = await axios.get<PlayersSetRes>(url, { params });
   return data;
@@ -30,13 +30,18 @@ const getPlayersSet = async ({
 export default function usePlayersSetQuery(
   args: GetPlayersSetQueryParams
 ): UseQueryResult<PlayersSetRes> {
-  return useQuery(["playerset"], () => getPlayersSet(args), {
-    refetchOnWindowFocus: false,
-    retry: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-    staleTime: twentyFourHoursInMs,
-  });
+  return useQuery(
+    ['playerset', args.tournamentIds.join(',')],
+    () => getPlayersSet(args),
+    {
+      refetchOnWindowFocus: false,
+      retry: false,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      staleTime: twentyFourHoursInMs,
+      enabled: args.tournamentIds.length > 0,
+    }
+  );
 }
 
 const twentyFourHoursInMs = 1000 * 60 * 60 * 24;
