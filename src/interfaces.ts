@@ -62,6 +62,14 @@ export interface Match {
   match: MatchInfo;
 };
 
+export interface OpenMatches {
+  tournament?: TournamentInfo;
+  tournament_name?: string;
+  game_name?: string;
+  tournament_id: number;
+  openMatches: MatchInfo[];
+}
+
 export interface MatchInfo {
   attachment_count?: string | null;
   created_at: string;

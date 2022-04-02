@@ -101,7 +101,6 @@ export default function PlayerView(): JSX.Element {
     scoreCsv?: string
   ) => {
     if (!matchId) return;
-    console.log('report matchid', matchId);
     const args = {
       apiKey,
       subdomain,
@@ -110,9 +109,7 @@ export default function PlayerView(): JSX.Element {
       winnerId,
       scoreCsv,
     };
-    console.log(args);
     const res = await reportMatch(args);
-    console.log(res);
   };
 
   const globalIsFetching = useIsFetching();
@@ -449,7 +446,6 @@ export default function PlayerView(): JSX.Element {
             </div>
           ))}
         </div>
-        {/* <pre>{JSON.stringify(playerDetailViewData, null, 2)}</pre> */}
       </div>
     </>
   );
