@@ -1,5 +1,12 @@
-import React, { useContext, useMemo } from 'react';
-import { Button, Dropdown, DropdownButton, Spinner } from 'react-bootstrap';
+import React, { useContext, useMemo, useState } from 'react';
+import {
+  Button,
+  Dropdown,
+  DropdownButton,
+  Spinner,
+  Toast,
+  ToastContainer,
+} from 'react-bootstrap';
 import { useIsFetching } from 'react-query';
 import { AppContext } from '@contexts/AppContext';
 import usePlayersSetQuery from '@hooks/query/usePlayersSetQuery';
@@ -26,6 +33,8 @@ interface MatchDetail {
 export default function PlayerView(): JSX.Element {
   const { state, dispatch } = useContext(AppContext);
   const { apiKey, subdomain, selectedTournaments, playerIdView } = state;
+
+  const [show, setShow] = useState(false);
 
   // using players set cached query, get entities[playerIdView] to retrieve tournament ids
   const { data } = usePlayersSetQuery({
@@ -112,19 +121,20 @@ export default function PlayerView(): JSX.Element {
       winnerId,
       scoreCsv,
     };
-    await reportMatch(args, { onSuccess: (res) => {
-      if (res?.data?.success) {
-        dispatch({ type: 'CHANGE_VIEW', payload: { view: 'HOME' } });
-      }
-    } });
+    await reportMatch(args, {
+      onSuccess: (res) => {
+        if (res?.data?.success) {
+          setShow(true);
+          // dispatch({ type: 'CHANGE_VIEW', payload: { view: 'HOME' } });
+        }
+      },
+    });
   };
 
   const globalIsFetching = useIsFetching();
 
   return (
     <>
-    {JSON.stringify(reportMatchSuccess, null, 2)}
-    {JSON.stringify(reportMatchLoading, null, 2)}
       <div
         className="d-flex justify-content-center mb-3 bg-dark"
         style={{ position: 'sticky', top: 0 }}
@@ -456,6 +466,22 @@ export default function PlayerView(): JSX.Element {
           ))}
         </div>
       </div>
+      <ToastContainer position="top-center">
+        <Toast
+          onClose={() => {
+            setShow(false);
+            dispatch({ type: 'CHANGE_VIEW', payload: { view: 'HOME' } });
+          }}
+          show={show}
+          delay={3000}
+          autohide
+        >
+          <Toast.Header>
+            <strong className="me-auto">Match Reported</strong>
+          </Toast.Header>
+          <Toast.Body className="text-black">Successfully updated.</Toast.Body>
+        </Toast>
+      </ToastContainer>
     </>
   );
 }
