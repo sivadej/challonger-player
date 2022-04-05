@@ -22,6 +22,10 @@ export default function useRecentTournamentsQuery(
   args: GetRecentTournamentsQueryParams
 ): UseQueryResult<Tournament[]> {
   return useQuery([args.createdAfterDate, 'recentTournaments'], () =>
-    getRecentTournaments(args)
+    getRecentTournaments(args),
+    {
+      refetchOnWindowFocus: false,
+      refetchOnMount: true,
+    }
   );
 }
