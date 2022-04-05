@@ -92,8 +92,11 @@ export default function PlayerView(): JSX.Element {
     return tpLines;
   }, [playerEntity, tRes, playerDict]);
 
-  const { mutate: reportMatch, isLoading: reportMatchLoading } =
-    useReportMatchMutation();
+  const {
+    mutate: reportMatch,
+    isLoading: reportMatchLoading,
+    isSuccess: reportMatchSuccess,
+  } = useReportMatchMutation();
   const handleClickReportMatch = async (
     matchId: number | string,
     tournamentId: string | number,
@@ -109,19 +112,25 @@ export default function PlayerView(): JSX.Element {
       winnerId,
       scoreCsv,
     };
-    const res = await reportMatch(args);
+    await reportMatch(args, { onSuccess: (res) => {
+      if (res?.data?.success) {
+        dispatch({ type: 'CHANGE_VIEW', payload: { view: 'HOME' } });
+      }
+    } });
   };
 
   const globalIsFetching = useIsFetching();
 
   return (
     <>
+    {JSON.stringify(reportMatchSuccess, null, 2)}
+    {JSON.stringify(reportMatchLoading, null, 2)}
       <div
-        className='d-flex justify-content-center mb-3 bg-dark'
+        className="d-flex justify-content-center mb-3 bg-dark"
         style={{ position: 'sticky', top: 0 }}
       >
         <div
-          className='d-flex w-100 m-3 align-items-center'
+          className="d-flex w-100 m-3 align-items-center"
           style={{ justifyContent: 'space-between' }}
         >
           <div
@@ -139,12 +148,12 @@ export default function PlayerView(): JSX.Element {
             style={{ flex: 0, display: 'inline-flex', alignItems: 'center' }}
           >
             {globalIsFetching > 0 || reportMatchLoading ? (
-              <Spinner animation='grow' variant='primary' className='mx-4' />
+              <Spinner animation="grow" variant="primary" className="mx-4" />
             ) : null}
             <Button
-              variant='outline-light'
-              size='lg'
-              className='px-4'
+              variant="outline-light"
+              size="lg"
+              className="px-4"
               onClick={() =>
                 dispatch({ type: 'CHANGE_VIEW', payload: { view: 'HOME' } })
               }
@@ -154,12 +163,12 @@ export default function PlayerView(): JSX.Element {
           </div>
         </div>
       </div>
-      <div className='d-flex justify-content-center mt-0'>
+      <div className="d-flex justify-content-center mt-0">
         <div style={{ width: '85%', maxWidth: 1000 }}>
           {playerDetailViewData.map((tourney) => (
             <div key={tourney.tournamentName}>
               <div
-                className='text-uppercase'
+                className="text-uppercase"
                 style={{
                   fontSize: '2.5rem',
                   fontWeight: 800,
@@ -174,7 +183,7 @@ export default function PlayerView(): JSX.Element {
               <div style={{ fontSize: '2rem', textTransform: 'uppercase' }}>
                 {tourney.matches?.map((match) => (
                   <div
-                    className='border border-light p-2 d-flex align-items-center'
+                    className="border border-light p-2 d-flex align-items-center"
                     key={match.mId}
                     style={getBgStyle(match.isWinner)}
                   >
@@ -194,18 +203,18 @@ export default function PlayerView(): JSX.Element {
                         paddingLeft: 8,
                       }}
                     >
-                      <span className='text-muted small px-2'>vs</span>
-                      <span style={{ fontSize: '1.2em' }} className='mx-2'>
+                      <span className="text-muted small px-2">vs</span>
+                      <span style={{ fontSize: '1.2em' }} className="mx-2">
                         {match.p1.isOpponent
                           ? match.p1.name ?? (
-                              <span className='small fst-italic text-muted'>
+                              <span className="small fst-italic text-muted">
                                 [ tbd ]
                               </span>
                             )
                           : null}
                         {match.p2.isOpponent
                           ? match.p2.name ?? (
-                              <span className='small fst-italic text-muted'>
+                              <span className="small fst-italic text-muted">
                                 [ tbd ]
                               </span>
                             )
@@ -233,12 +242,12 @@ export default function PlayerView(): JSX.Element {
                             REPORT
                           </div>
                           <DropdownButton
-                            title='WIN'
-                            size='lg'
-                            menuVariant='dark'
+                            title="WIN"
+                            size="lg"
+                            menuVariant="dark"
                           >
                             <Dropdown.Item
-                              className='fs-2'
+                              className="fs-2"
                               onClick={() =>
                                 handleClickReportMatch(
                                   match.mId,
@@ -253,7 +262,7 @@ export default function PlayerView(): JSX.Element {
                               2-0
                             </Dropdown.Item>
                             <Dropdown.Item
-                              className='fs-2'
+                              className="fs-2"
                               onClick={() =>
                                 handleClickReportMatch(
                                   match.mId,
@@ -269,7 +278,7 @@ export default function PlayerView(): JSX.Element {
                             </Dropdown.Item>
                             <Dropdown.Divider />
                             <Dropdown.Item
-                              className='fs-3'
+                              className="fs-3"
                               onClick={() =>
                                 handleClickReportMatch(
                                   match.mId,
@@ -284,7 +293,7 @@ export default function PlayerView(): JSX.Element {
                               3-0
                             </Dropdown.Item>
                             <Dropdown.Item
-                              className='fs-3'
+                              className="fs-3"
                               onClick={() =>
                                 handleClickReportMatch(
                                   match.mId,
@@ -299,7 +308,7 @@ export default function PlayerView(): JSX.Element {
                               3-1
                             </Dropdown.Item>
                             <Dropdown.Item
-                              className='fs-3'
+                              className="fs-3"
                               onClick={() =>
                                 handleClickReportMatch(
                                   match.mId,
@@ -330,13 +339,13 @@ export default function PlayerView(): JSX.Element {
                             </Dropdown.Item>
                           </DropdownButton>
                           <DropdownButton
-                            title='LOSS'
-                            size='lg'
-                            menuVariant='dark'
-                            variant='danger'
+                            title="LOSS"
+                            size="lg"
+                            menuVariant="dark"
+                            variant="danger"
                           >
                             <Dropdown.Item
-                              className='fs-2'
+                              className="fs-2"
                               onClick={() =>
                                 handleClickReportMatch(
                                   match.mId,
@@ -351,7 +360,7 @@ export default function PlayerView(): JSX.Element {
                               0-2
                             </Dropdown.Item>
                             <Dropdown.Item
-                              className='fs-2'
+                              className="fs-2"
                               onClick={() =>
                                 handleClickReportMatch(
                                   match.mId,
@@ -367,7 +376,7 @@ export default function PlayerView(): JSX.Element {
                             </Dropdown.Item>
                             <Dropdown.Divider />
                             <Dropdown.Item
-                              className='fs-3'
+                              className="fs-3"
                               onClick={() =>
                                 handleClickReportMatch(
                                   match.mId,
@@ -382,7 +391,7 @@ export default function PlayerView(): JSX.Element {
                               0-3
                             </Dropdown.Item>
                             <Dropdown.Item
-                              className='fs-3'
+                              className="fs-3"
                               onClick={() =>
                                 handleClickReportMatch(
                                   match.mId,
@@ -397,7 +406,7 @@ export default function PlayerView(): JSX.Element {
                               1-3
                             </Dropdown.Item>
                             <Dropdown.Item
-                              className='fs-3'
+                              className="fs-3"
                               onClick={() =>
                                 handleClickReportMatch(
                                   match.mId,
