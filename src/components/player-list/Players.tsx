@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useRef } from 'react';
 import { Badge, Row, Col, Placeholder } from 'react-bootstrap';
 import usePlayersSetQuery from '@hooks/query/usePlayersSetQuery';
 import useTournamentsQuery from '@hooks/query/useTournamentsQuery';
@@ -56,6 +56,8 @@ export default function Players(): JSX.Element {
     dispatch({ type: 'SHOW_PLAYER_VIEW', payload: { playerName: name } });
   };
 
+  const reporterRef = useRef<HTMLDivElement>(null);
+
   if (isLoading) {
     return (
       <>
@@ -85,8 +87,9 @@ export default function Players(): JSX.Element {
 
   return (
     <>
-      <div className='p-3 bg-dark'>
+      <div className='p-3 bg-dark' role="button" onClick={() => reporterRef?.current?.scrollIntoView({ behavior: 'smooth' })}>
         <h3>OPEN MATCHES</h3>
+        <h4>scroll to the bottom to report your match...</h4>
         {getOpenMatches().map((to) => (
           <div className='p-2 m-2 border border-light' key={to.tournament_id}>
             <div className='text-uppercase'>{to.game_name}</div>
@@ -126,7 +129,7 @@ export default function Players(): JSX.Element {
       <div style={{ margin: '0 4rem', fontWeight: 400, fontSize: '1.5rem' }}>
         SELECT YOUR NAME
       </div>
-      <div className='d-flex justify-content-center mt-3'>
+      <div className='d-flex justify-content-center mt-3' ref={reporterRef}>
         <div
           className='bg-dark border border-light p-3'
           style={{ width: '85%' }}
