@@ -33,6 +33,8 @@ export default function useTournamentsQuery(
         subdomain: args.subdomain,
         tournamentId: tId,
       }),
+      refetchInterval: 10000,
+      refetchOnMount: true,
     }))
   );
 }
